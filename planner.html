@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>오늘의 공부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --surface:#F6F4FC;
+    --surface-2:#EFECFA;
+    --ink:#2E2B3F;
+    --ink-soft:#807BA0;
+    --line: rgba(46,43,63,0.10);
+    --primary:#6C63FF;
+    --primary-ink:#FFFFFF;
+    --accent:#FFB86B;
+    --accent-ink:#4A3A1F;
+    --good:#3FBF88;
+    --bad:#FF6B6B;
+    --shadow: 0 10px 24px rgba(60,50,120,0.10);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]):not([data-theme="red"]){
+      --bg:#181622;
+      --surface:#221F30;
+      --surface-2:#2B2740;
+      --ink:#EEEBFA;
+      --ink-soft:#9C96C2;
+      --line: rgba(238,235,250,0.10);
+      --primary:#9B93FF;
+      --primary-ink:#181622;
+      --accent:#FFC97A;
+      --accent-ink:#3A2C10;
+      --good:#5FDBA3;
+      --bad:#FF8585;
+      --shadow: 0 10px 24px rgba(0,0,0,0.35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#181622;
+    --surface:#221F30;
+    --surface-2:#2B2740;
+    --ink:#EEEBFA;
+    --ink-soft:#9C96C2;
+    --line: rgba(238,235,250,0.10);
+    --primary:#9B93FF;
+    --primary-ink:#181622;
+    --accent:#FFC97A;
+    --accent-ink:#3A2C10;
+    --good:#5FDBA3;
+    --bad:#FF8585;
+    --shadow: 0 10px 24px rgba(0,0,0,0.35);
+    color-scheme: dark;
+  }
+  :root[data-theme="red"]{
+    --bg:#FFF4F1;
+    --surface:#FFE6E0;
+    --surface-2:#FFD8CF;
+    --ink:#4A2A22;
+    --ink-soft:#A66E60;
+    --line: rgba(74,42,34,0.12);
+    --primary:#FF6F5E;
+    --primary-ink:#FFFFFF;
+    --accent:#FFA987;
+    --accent-ink:#4A2A14;
+    --good:#3FBF88;
+    --bad:#E14B3B;
+    --shadow: 0 10px 24px rgba(200,90,70,0.15);
+    color-scheme: light;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+    transition:background .25s ease, color .25s ease;
+  }
+  h1,h2,h3,.brand,.big-num{
+    font-family:'Gaegu','Noto Sans KR',sans-serif;
+  }
+  button{font-family:inherit;}
+
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    padding-bottom:86px;
+  }
+
+  /* header */
+  .topbar{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    padding:22px 20px 8px;
+  }
+  .topbar h1{
+    font-size:26px;
+    margin:0;
+    font-weight:700;
+  }
+  .topbar .sub{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  .page{
+    padding:8px 20px 20px;
+    animation: fadein .25s ease;
+  }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+  .hidden{display:none !important;}
+
+  /* calendar */
+  .cal-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .cal-head .month-label{ font-size:19px; font-weight:700; }
+  .cal-nav{ display:flex; gap:6px; }
+  .cal-nav button{
+    width:34px;height:34px;border-radius:50%;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    font-size:16px; cursor:pointer;
+  }
+  .weekday-row{
+    display:grid; grid-template-columns:repeat(7,1fr);
+    text-align:center; font-size:12px; color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .cal-grid{
+    display:grid; grid-template-columns:repeat(7,1fr);
+    gap:4px;
+  }
+  .cal-cell{
+    aspect-ratio:1/1;
+    border-radius:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:3px;
+    background:transparent;
+    border:1px solid transparent;
+    cursor:pointer;
+    position:relative;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .cal-cell.pad{visibility:hidden; cursor:default;}
+  .cal-cell:hover{ background:var(--surface); }
+  .cal-cell.selected{ background:var(--primary); color:var(--primary-ink); font-weight:700; }
+  .cal-cell.today:not(.selected){ border:1px solid var(--primary); font-weight:700; }
+  .cal-dot{
+    width:5px;height:5px;border-radius:50%; background:var(--accent);
+  }
+  .cal-cell.selected .cal-dot{ background:var(--primary-ink); }
+
+  .week-panel{
+    margin-top:16px;
+    background:var(--surface);
+    border-radius:20px;
+    padding:16px;
+  }
+  .week-panel h3{ margin:0 0 12px; font-size:16px; }
+  .week-row{
+    display:flex; gap:6px; overflow-x:auto;
+  }
+  .week-day{
+    flex:1; min-width:42px;
+    background:var(--bg);
+    border-radius:14px;
+    padding:10px 4px;
+    text-align:center;
+    cursor:pointer;
+    border:1px solid transparent;
+  }
+  .week-day.selected{ border-color:var(--primary); background:var(--surface-2); }
+  .week-day.today .wd-num{ color:var(--primary); font-weight:700; }
+  .week-day .wd-label{ font-size:11px; color:var(--ink-soft); margin-bottom:4px; }
+  .week-day .wd-num{ font-size:15px; font-weight:500; margin-bottom:6px; }
+  .week-day .wd-count{
+    font-size:10px; color:var(--ink-soft); background:var(--surface-2);
+    border-radius:10px; padding:2px 0;
+  }
+  .week-day.has-todo .wd-count{ background:var(--primary); color:var(--primary-ink); font-weight:700; }
+
+  .day-panel{
+    margin-top:16px;
+    background:var(--surface);
+    border-radius:20px;
+    padding:16px 16px 6px;
+  }
+  .day-panel h3{ margin:0 0 10px; font-size:16px; }
+  .add-row{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+  .add-row input, .add-row select{
+    flex:1; padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:14px;
+  }
+  .add-row .select-line{ display:flex; gap:8px; }
+  .add-row .select-line select{ flex:1; min-width:0; }
+  .manage-btn{
+    flex:none; width:38px; border-radius:12px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink-soft); font-size:16px; cursor:pointer;
+  }
+  .add-row button, .primary-btn{
+    background:var(--primary); color:var(--primary-ink);
+    border:none; border-radius:12px; padding:10px 16px;
+    font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .manage-panel{
+    background:var(--surface-2); border-radius:14px; padding:12px; margin-bottom:4px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .manage-panel .row{ display:flex; gap:8px; }
+  .manage-panel input{
+    flex:1; padding:9px 10px; border-radius:10px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:13px;
+  }
+  .manage-panel .add-mini{
+    background:var(--primary); color:var(--primary-ink); border:none; border-radius:10px;
+    padding:0 12px; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .manage-tags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .manage-tag{
+    display:flex; align-items:center; gap:6px;
+    background:var(--bg); border-radius:20px; padding:5px 6px 5px 12px; font-size:12px;
+  }
+  .manage-tag button{
+    background:none; border:none; color:var(--ink-soft); font-size:13px; cursor:pointer;
+    width:18px;height:18px; border-radius:50%;
+  }
+  .todo-list{ list-style:none; margin:0; padding:0; }
+  .todo-item{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 4px; border-bottom:1px solid var(--line);
+    font-size:15px;
+  }
+  .todo-item:last-child{border-bottom:none;}
+  .todo-item.checked span{ text-decoration:line-through; color:var(--ink-soft); }
+  .chk{
+    width:22px;height:22px;border-radius:7px;border:2px solid var(--primary);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer; flex:none; color:var(--primary-ink); font-size:13px;
+  }
+  .chk.on{ background:var(--primary); }
+  .todo-item span{ flex:1; }
+  .del-btn{
+    background:none;border:none;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:2px 4px;
+  }
+  .empty-note{ color:var(--ink-soft); font-size:13px; padding:14px 4px 18px; text-align:center; }
+
+  .diary-panel{
+    margin-top:16px;
+    background:var(--surface);
+    border-radius:20px;
+    padding:16px;
+  }
+  .diary-panel h3{ margin:0 0 4px; font-size:16px; }
+  .diary-sub{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; line-height:1.5; }
+  .diary-textarea{
+    width:100%; min-height:120px; resize:vertical;
+    padding:12px 14px; border-radius:14px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:14px; line-height:1.6;
+    font-family:inherit;
+  }
+  .diary-footer{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; }
+  .diary-status{ font-size:12px; color:var(--ink-soft); min-height:14px; flex:1; }
+  .diary-status.dirty{ color:var(--bad); }
+  #diary-save-btn{ flex:none; padding:9px 22px; }
+
+  .assess-panel{
+    margin-top:16px;
+    background:var(--surface);
+    border-radius:20px;
+    padding:16px;
+  }
+  .assess-panel h3{ margin:0 0 10px; font-size:16px; }
+  .assess-form{ display:flex; flex-direction:column; gap:8px; margin-bottom:4px; }
+  .assess-row{ display:flex; gap:8px; }
+  .assess-form input, .assess-form select{
+    padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:14px; flex:1; min-width:0;
+  }
+  .assess-date-input{ width:100%; }
+  .assess-list{ list-style:none; margin:14px 0 0; padding:0; }
+  .assess-item{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:12px 12px; border-radius:14px; margin-bottom:8px;
+    background: var(--surface-2);
+    border-left:4px solid var(--primary);
+  }
+  .assess-item .assess-main{ flex:1; }
+  .assess-item .assess-time{ font-size:11px; color:var(--primary); font-weight:700; margin-bottom:2px; }
+  .assess-item .assess-subject{ font-size:12px; font-weight:700; color:var(--ink); display:inline-block; margin-right:6px; }
+  .assess-item .assess-content{ font-size:13px; color:var(--ink); line-height:1.5; }
+  .assess-item .del-btn{ flex:none; }
+  .cal-dot-row{ position:absolute; bottom:6px; display:flex; gap:3px; }
+  .cal-dot-assess{ width:5px;height:5px;border-radius:50%; background:var(--primary); }
+  .cal-cell.selected .cal-dot-assess{ background:var(--primary-ink); }
+
+  /* cards / sections */
+  .section-title{ font-size:16px; font-weight:700; margin:18px 0 8px; }
+  .card{
+    background:var(--surface); border-radius:18px; padding:16px;
+    box-shadow:var(--shadow);
+  }
+
+  /* vocab */
+  .vocab-form{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .vocab-form .row{ display:flex; gap:8px; }
+  .vocab-form input{
+    flex:1; padding:11px 12px; border-radius:12px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:14px;
+  }
+  .word-input-wrap{ position:relative; flex:1; }
+  .word-input-wrap input{ width:100%; }
+  .word-suggest-list{
+    position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20;
+    background:var(--bg); border:1px solid var(--line); border-radius:12px;
+    box-shadow:var(--shadow); max-height:180px; overflow-y:auto;
+  }
+  .word-suggest-item{
+    padding:9px 12px; font-size:14px; cursor:pointer; border-bottom:1px solid var(--line);
+  }
+  .word-suggest-item:last-child{ border-bottom:none; }
+  .word-suggest-item:hover, .word-suggest-item.active{ background:var(--surface-2); }
+  .dict-btn{
+    flex:none; width:44px; border-radius:12px; border:1px solid var(--line);
+    background:var(--surface); font-size:17px; cursor:pointer;
+  }
+  .dict-link{
+    background:none; border:none; color:var(--ink-soft); font-size:12px; cursor:pointer;
+    padding:2px 0; display:flex; align-items:center; gap:3px;
+  }
+  .dict-link:hover{ color:var(--ink); }
+  .test-btn{
+    width:100%; background:var(--accent); color:var(--accent-ink);
+    border:none; border-radius:14px; padding:13px; font-weight:700; font-size:15px;
+    margin-bottom:14px; cursor:pointer;
+  }
+  .vocab-item{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface); border-radius:14px; padding:12px 14px; margin-bottom:8px;
+  }
+  .vocab-word{ font-weight:700; font-size:15px; }
+  .vocab-meaning{ font-size:13px; color:var(--ink-soft); }
+  .vocab-meaning.blurred{ filter:blur(6px); user-select:none; }
+  .reveal-btn{
+    background:var(--surface-2); color:var(--ink-soft); border:none;
+    border-radius:8px; padding:2px 8px; font-size:11px; cursor:pointer; margin-top:4px;
+  }
+  .vocab-count{
+    font-size:12px; color:var(--ink-soft); background:var(--surface-2);
+    border-radius:20px; padding:3px 9px; flex:none;
+  }
+  .vocab-check{
+    flex:none; width:36px;height:36px;border-radius:50%; border:none;
+    background:var(--good); color:#fff; font-size:16px; cursor:pointer;
+  }
+  .vocab-incorrect{
+    flex:none; width:36px;height:36px;border-radius:50%; border:none;
+    background:var(--bad); color:#fff; font-size:16px; cursor:pointer;
+  }
+  .vocab-actions{ display:flex; gap:6px; flex:none; }
+  .vocab-item{ flex-wrap:wrap; }
+  .vocab-manage-row{ display:flex; gap:10px; margin-top:6px; }
+  .vocab-manage-row button{
+    background:none; border:none; color:var(--ink-soft); font-size:12px; cursor:pointer;
+    padding:2px 0; display:flex; align-items:center; gap:3px;
+  }
+  .vocab-manage-row button:hover{ color:var(--ink); }
+  .vocab-manage-row .del-word{ color:var(--bad); }
+  .vocab-edit-form{ display:flex; flex-direction:column; gap:6px; flex:1; }
+  .vocab-edit-form input{
+    padding:9px 10px; border-radius:10px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:13px;
+  }
+  .vocab-edit-form .edit-btn-row{ display:flex; gap:8px; }
+  .vocab-edit-form .edit-btn-row button{
+    flex:1; padding:8px; border-radius:10px; border:none; font-size:12px; font-weight:700; cursor:pointer;
+  }
+  .vocab-edit-form .save-btn{ background:var(--primary); color:var(--primary-ink); }
+  .vocab-edit-form .cancel-btn{ background:var(--surface-2); color:var(--ink-soft); }
+
+  /* study timer */
+  .timer-card{ text-align:center; padding:30px 16px; }
+  .timer-display{
+    font-size:48px; font-weight:700; letter-spacing:1px; margin:14px 0 20px;
+    font-variant-numeric:tabular-nums;
+  }
+  .subject-input{
+    width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:15px; text-align:center;
+    margin-bottom:16px;
+  }
+  .big-btn{
+    width:100%; padding:16px; border:none; border-radius:16px;
+    font-size:17px; font-weight:700; cursor:pointer;
+  }
+  .big-btn.start{ background:var(--primary); color:var(--primary-ink); }
+  .big-btn.stop{ background:var(--bad); color:#fff; }
+  .result-box{
+    margin-top:16px; padding:14px; border-radius:14px; background:var(--surface-2);
+    font-size:14px; line-height:1.7; text-align:left;
+  }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; justify-content:center; }
+  .chip{
+    padding:6px 12px; border-radius:20px; background:var(--surface-2); color:var(--ink);
+    font-size:12px; border:none; cursor:pointer;
+  }
+
+  /* records */
+  .chart-title{ font-size:14px; font-weight:700; margin-bottom:14px; }
+  .bar-row{ margin-bottom:14px; }
+  .bar-row:last-child{ margin-bottom:0; }
+  .bar-labels{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:5px; font-size:13px;
+  }
+  .bar-labels .b-name{ font-weight:700; }
+  .bar-labels .b-count{ color:var(--primary); font-weight:700; font-size:12px; }
+  .bar-track{
+    width:100%; height:10px; border-radius:6px; background:var(--surface-2);
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%; border-radius:6px; background:var(--primary);
+    transition:width .4s ease;
+  }
+  .record-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 4px; border-bottom:1px solid var(--line);
+  }
+  .record-row:last-child{border-bottom:none;}
+  .record-name{ font-weight:700; font-size:14px; }
+  .record-sub{ font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .record-val{ text-align:right; font-size:14px; font-weight:700; color:var(--primary); }
+  .summary-grid{ display:flex; gap:10px; margin-bottom:14px; }
+  .summary-box{
+    flex:1; background:var(--surface); border-radius:16px; padding:14px; text-align:center;
+  }
+  .summary-box .big-num{ font-size:22px; font-weight:700; color:var(--primary); }
+  .summary-box .cap{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+
+  /* theme picker */
+  .theme-row{ display:flex; gap:10px; margin-top:6px; }
+  .theme-opt{
+    flex:1; border-radius:14px; padding:12px 8px; text-align:center; cursor:pointer;
+    border:2px solid var(--line); font-size:12px; font-weight:700; color:var(--ink);
+  }
+  .theme-opt.active{ border-color:var(--primary); }
+  .theme-swatch{
+    width:100%; height:34px; border-radius:9px; margin-bottom:6px;
+  }
+
+  /* nav */
+  .navbar{
+    position:fixed; left:0; right:0; bottom:0;
+    max-width:480px; margin:0 auto;
+    background:var(--surface);
+    border-top:1px solid var(--line);
+    display:flex;
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 18px rgba(0,0,0,0.06);
+  }
+  .nav-btn{
+    flex:1; background:none; border:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:6px 2px; border-radius:12px; color:var(--ink-soft);
+  }
+  .nav-btn .icon{ font-size:20px; }
+  .nav-btn .label{ font-size:11px; font-weight:500; }
+  .nav-btn.active{ color:var(--primary); }
+  .nav-btn.active .icon{ transform:scale(1.08); }
+
+  /* test modal */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(20,15,35,0.55);
+    display:flex; align-items:flex-end; justify-content:center; z-index:50;
+  }
+  .modal-sheet{
+    width:100%; max-width:480px; background:var(--bg);
+    border-radius:24px 24px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+    max-height:88vh; overflow-y:auto;
+  }
+  .modal-title{ font-size:18px; font-weight:700; margin:0 0 14px; }
+  .mode-row{ display:flex; gap:10px; margin-bottom:16px; }
+  .mode-opt{
+    flex:1; padding:16px 10px; border-radius:14px; border:2px solid var(--line);
+    text-align:center; cursor:pointer; background:var(--surface);
+  }
+  .mode-opt .m-title{ font-weight:700; font-size:14px; margin-bottom:4px; }
+  .mode-opt .m-sub{ font-size:11px; color:var(--ink-soft); }
+  .mode-opt.active{ border-color:var(--primary); }
+  .word-pick-header{
+    display:flex; justify-content:space-between; align-items:center;
+    margin:16px 0 8px; font-size:12px; color:var(--ink-soft);
+  }
+  .word-pick-actions{ display:flex; gap:8px; }
+  .word-pick-actions button{
+    background:var(--surface-2); border:none; color:var(--ink); font-size:11px;
+    border-radius:8px; padding:4px 8px; cursor:pointer;
+  }
+  .word-pick-list{
+    max-height:180px; overflow-y:auto; border:1px solid var(--line);
+    border-radius:14px; padding:6px 10px; margin-bottom:16px; background:var(--surface);
+  }
+  .word-pick-row{
+    display:flex; align-items:center; gap:8px; padding:8px 2px;
+    border-bottom:1px solid var(--line); font-size:13px; cursor:pointer;
+  }
+  .word-pick-row:last-child{ border-bottom:none; }
+  .word-pick-row .wp-word{ font-weight:700; flex:none; }
+  .word-pick-row .wp-meaning{ color:var(--ink-soft); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .word-pick-row .wp-count{ color:var(--ink-soft); flex:none; font-size:11px; }
+  .word-pick{ flex:none; width:16px; height:16px; accent-color:var(--primary); }
+  .quiz-progress{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .quiz-q{
+    background:var(--surface); border-radius:16px; padding:22px 16px;
+    text-align:center; font-size:24px; font-weight:700; margin-bottom:14px;
+  }
+  .quiz-input{
+    width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:15px; text-align:center;
+    margin-bottom:12px;
+  }
+  .quiz-feedback{ text-align:center; font-size:14px; font-weight:700; margin-bottom:12px; min-height:20px;}
+  .quiz-feedback.ok{ color:var(--good); }
+  .quiz-feedback.no{ color:var(--bad); }
+  .close-x{
+    position:absolute; top:16px; right:18px; background:none; border:none;
+    font-size:20px; color:var(--ink-soft); cursor:pointer;
+  }
+  .modal-sheet{ position:relative; }
+  .result-final .big-num{ font-size:40px; color:var(--primary); text-align:center; display:block; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== HOME ===== -->
+  <section class="page" id="page-home">
+    <div class="topbar">
+      <div>
+        <h1>오늘의 공부</h1>
+        <div class="sub" id="home-date-label"></div>
+      </div>
+    </div>
+    <div class="page" style="padding-top:0;">
+      <div class="cal-head">
+        <div class="month-label" id="cal-month-label"></div>
+        <div class="cal-nav">
+          <button id="cal-prev">‹</button>
+          <button id="cal-next">›</button>
+        </div>
+      </div>
+      <div class="weekday-row">
+        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+
+      <div class="week-panel">
+        <h3>이번 주 한눈에 보기</h3>
+        <div class="week-row" id="week-row"></div>
+      </div>
+
+      <div class="day-panel">
+        <h3 id="day-panel-title">일정</h3>
+        <div class="add-row">
+          <div class="select-line">
+            <select id="subject-select"></select>
+            <button class="manage-btn" id="manage-subject-btn" title="과목 관리">⚙</button>
+          </div>
+          <div class="select-line">
+            <select id="task-select"></select>
+            <button class="manage-btn" id="manage-task-btn" title="세부 항목 관리">⚙</button>
+          </div>
+          <div class="manage-panel hidden" id="subject-manage-panel">
+            <div class="row">
+              <input type="text" id="subject-new-input" placeholder="새 과목 이름">
+              <button class="add-mini" id="subject-new-add">추가</button>
+            </div>
+            <div class="manage-tags" id="subject-tag-list"></div>
+          </div>
+          <div class="manage-panel hidden" id="task-manage-panel">
+            <div class="row">
+              <input type="text" id="task-new-input" placeholder="새 세부 항목 (예: 수학의 정석 3단원)">
+              <button class="add-mini" id="task-new-add">추가</button>
+            </div>
+            <div class="manage-tags" id="task-tag-list"></div>
+          </div>
+          <button id="todo-add">일정 추가</button>
+        </div>
+        <ul class="todo-list" id="todo-list"></ul>
+        <ul class="assess-list" id="assess-list"></ul>
+      </div>
+
+      <div class="diary-panel">
+        <h3 id="diary-panel-title">학습일기</h3>
+        <div class="diary-sub">오늘 새롭게 알게 된 점, 소감, 실수했던 점을 자유롭게 적어보세요</div>
+        <textarea id="diary-textarea" class="diary-textarea" placeholder="예) 오늘은 이차방정식 근의 공식을 새로 배웠다. 부호 실수를 자주 해서 다음엔 더 꼼꼼히 봐야겠다."></textarea>
+        <div class="diary-footer">
+          <div class="diary-status" id="diary-status"></div>
+          <button class="primary-btn" id="diary-save-btn">저장</button>
+        </div>
+      </div>
+
+      <div class="assess-panel">
+        <h3 id="assess-panel-title">수행평가 추가</h3>
+        <div class="assess-form">
+          <input type="date" id="assess-date-input" class="assess-date-input">
+          <div class="assess-row">
+            <select id="assess-period-select"></select>
+            <input type="text" id="assess-subject-select" placeholder="과목 (예: 과학탐구실험2)">
+          </div>
+          <input type="text" id="assess-content-input" placeholder="수행평가 내용 (예: 과학탐구실험2 보고서 제출)">
+          <button class="primary-btn" id="assess-add" style="width:100%;">수행평가 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="section-title">테마</div>
+      <div class="theme-row" id="theme-row">
+        <div class="theme-opt" data-theme="light">
+          <div class="theme-swatch" style="background:linear-gradient(135deg,#fff,#6C63FF);"></div>
+          화이트
+        </div>
+        <div class="theme-opt" data-theme="dark">
+          <div class="theme-swatch" style="background:linear-gradient(135deg,#181622,#9B93FF);"></div>
+          다크
+        </div>
+        <div class="theme-opt" data-theme="red">
+          <div class="theme-swatch" style="background:linear-gradient(135deg,#FFE6E0,#FF6F5E);"></div>
+          연한 빨강
+        </div>
+      </div>
+    </div>
+
+    <div class="page hidden">
+      <div class="section-title">기기 간 공유 (구글 시트 연동)</div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="add-row" style="margin-bottom:8px;">
+          <input type="text" id="cloud-url-input" placeholder="구글 시트 웹 앱 주소(URL)를 붙여넣으세요">
+        </div>
+        <button class="primary-btn" id="cloud-connect-btn" style="width:100%;">연결하기</button>
+        <div id="cloud-status" style="margin-top:10px; font-size:12px; color:var(--ink-soft);">아직 연결되지 않았어요</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== VOCAB ===== -->
+  <section class="page hidden" id="page-vocab">
+    <div class="topbar"><div><h1>단어장</h1><div class="sub" id="vocab-count-label"></div></div></div>
+    <div class="page" style="padding-top:0;">
+      <div class="vocab-form">
+        <div class="row">
+          <div class="word-input-wrap">
+            <input type="text" id="word-input" placeholder="영어 단어" autocomplete="off" spellcheck="false">
+            <div class="word-suggest-list hidden" id="word-suggest-list"></div>
+          </div>
+          <button type="button" class="dict-btn" id="dict-lookup-btn" title="사전에서 찾기">🔍</button>
+        </div>
+        <input type="text" id="meaning-input" placeholder="뜻">
+        <button class="primary-btn" id="word-add">단어 추가</button>
+      </div>
+      <button class="test-btn" id="open-test">✏️ 테스트하기</button>
+      <div id="vocab-list"></div>
+    </div>
+  </section>
+
+  <!-- ===== STUDY TIMER ===== -->
+  <section class="page hidden" id="page-study">
+    <div class="topbar"><div><h1>공부하기</h1><div class="sub">집중 시간을 기록해요</div></div></div>
+    <div class="page" style="padding-top:0;">
+      <div class="card timer-card">
+        <select id="subject-input" class="subject-input"></select>
+        <div class="empty-note hidden" id="no-todo-note" style="padding:0 0 12px;">오늘 등록된 일정이 없어요. 홈에서 먼저 일정을 추가해주세요.</div>
+        <div class="timer-display" id="timer-display">00:00:00</div>
+        <button class="big-btn start" id="timer-toggle">공부 시작</button>
+        <div class="result-box hidden" id="result-box"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STUDY RECORD ===== -->
+  <section class="page hidden" id="page-record">
+    <div class="topbar"><div><h1>공부 기록</h1><div class="sub">꾸준함이 쌓이고 있어요</div></div></div>
+    <div class="page" style="padding-top:0;">
+      <div class="summary-grid">
+        <div class="summary-box">
+          <div class="big-num" id="daily-avg">0분</div>
+          <div class="cap">하루 평균 공부 시간</div>
+        </div>
+        <div class="summary-box">
+          <div class="big-num" id="total-days">0일</div>
+          <div class="cap">기록한 날</div>
+        </div>
+      </div>
+      <div class="card" id="record-chart" style="margin-bottom:14px;"></div>
+      <div class="card" id="record-list"></div>
+    </div>
+  </section>
+
+  <!-- NAV -->
+  <div class="navbar">
+    <button class="nav-btn active" data-page="home"><span class="icon">🏠</span><span class="label">홈</span></button>
+    <button class="nav-btn" data-page="vocab"><span class="icon">📖</span><span class="label">단어장</span></button>
+    <button class="nav-btn" data-page="study"><span class="icon">⏱️</span><span class="label">공부하기</span></button>
+    <button class="nav-btn" data-page="record"><span class="icon">📊</span><span class="label">공부 기록</span></button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- storage helpers ---------- */
+  const LS = {
+    get(key, fallback){
+      try{
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      }catch(e){ return fallback; }
+    },
+    set(key, val){
+      try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+    }
+  };
+
+  const pad = n => String(n).padStart(2,'0');
+  const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const todayKey = () => dateKey(new Date());
+
+  /* ---------- cross-device sync (구글 시트 웹 앱 백엔드) ---------- */
+  const DEFAULT_CLOUD_URL = 'https://script.google.com/macros/s/AKfycbyzJkwaFNaEElvCsAYsbwpTOCwE8_L1DnTWRGeuhfgJwyRL3txVHXwb-zSdx2qfk2xC/exec';
+  let cloudUrl = LS.get('planner_cloud_url', DEFAULT_CLOUD_URL);
+  let cloudPushTimer = null;
+  let cloudPollTimer = null;
+  let cloudPulling = false;
+
+  function setCloudStatus(msg){
+    const el = document.getElementById('cloud-status');
+    if(el) el.textContent = msg;
+  }
+
+  function refreshAllScreens(){
+    if(typeof renderCalendar==='function') renderCalendar();
+    if(typeof renderWeekRow==='function') renderWeekRow();
+    if(typeof renderDayPanel==='function') renderDayPanel();
+    if(typeof renderDiary==='function') renderDiary();
+    if(typeof renderAssessList==='function') renderAssessList();
+    if(typeof renderVocab==='function') renderVocab();
+    if(typeof renderRecords==='function') renderRecords();
+    if(typeof renderSelects==='function') renderSelects();
+    if(typeof renderStudySelect==='function') renderStudySelect();
+  }
+
+  function buildFullState(){
+    return {
+      schedule, vocab, study, subjectOptions, taskOptions, diary, assessments,
+      updatedAt: Date.now()
+    };
+  }
+
+  function applyFullState(state){
+    if(!state) return;
+    if(state.schedule) schedule = state.schedule;
+    if(state.vocab) vocab = state.vocab;
+    if(state.study) study = state.study;
+    if(state.diary) diary = state.diary;
+    if(state.assessments) assessments = state.assessments;
+    if(Array.isArray(state.subjectOptions) && state.subjectOptions.length) subjectOptions = state.subjectOptions;
+    if(Array.isArray(state.taskOptions) && state.taskOptions.length) taskOptions = state.taskOptions;
+    LS.set('planner_schedule', schedule);
+    LS.set('planner_vocab', vocab);
+    LS.set('planner_study', study);
+    LS.set('planner_subjects', subjectOptions);
+    LS.set('planner_tasks', taskOptions);
+    LS.set('planner_diary', diary);
+    LS.set('planner_assessments', assessments);
+    refreshAllScreens();
+  }
+
+  async function pushToCloud(){
+    if(!cloudUrl) return;
+    try{
+      await fetch(cloudUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(buildFullState())
+      });
+      setCloudStatus('마지막 저장: ' + new Date().toLocaleTimeString());
+    }catch(e){
+      setCloudStatus('저장 실패 · 인터넷 연결이나 주소를 확인해주세요');
+    }
+  }
+
+  function pushToCloudDebounced(){
+    if(cloudPushTimer) clearTimeout(cloudPushTimer);
+    cloudPushTimer = setTimeout(pushToCloud, 400);
+  }
+
+  async function pullFromCloud(){
+    if(!cloudUrl || cloudPulling) return;
+    cloudPulling = true;
+    try{
+      const sep = cloudUrl.includes('?') ? '&' : '?';
+      const res = await fetch(cloudUrl + sep + 'action=data&_=' + Date.now());
+      const data = await res.json();
+      if(data && typeof data === 'object'){
+        applyFullState(data);
+        setCloudStatus('연결됨 · 마지막 동기화 ' + new Date().toLocaleTimeString());
+      }
+    }catch(e){
+      setCloudStatus('동기화 실패 · 인터넷 연결이나 주소를 확인해주세요');
+    }
+    cloudPulling = false;
+  }
+
+  function startCloudSync(){
+    if(!cloudUrl) return;
+    setCloudStatus('연결 확인 중...');
+    pullFromCloud();
+    if(cloudPollTimer) clearInterval(cloudPollTimer);
+    cloudPollTimer = setInterval(pullFromCloud, 8000);
+  }
+
+  // 기존 개별 호출부와의 호환을 위한 래퍼: 인자와 무관하게 전체 상태를 저장
+  function syncScheduleDoc(){ pushToCloudDebounced(); }
+  function syncVocabDoc(){ pushToCloudDebounced(); }
+  function deleteVocabDoc(){ pushToCloudDebounced(); }
+  function syncStudyDoc(){ pushToCloudDebounced(); }
+  function syncDropdowns(){ pushToCloudDebounced(); }
+  function syncDiaryDoc(){ pushToCloudDebounced(); }
+  function syncAssessmentDoc(){ pushToCloudDebounced(); }
+
+  /* ---------- state ---------- */
+  let theme = LS.get('planner_theme', 'light');
+  let schedule = LS.get('planner_schedule', {});      // { 'YYYY-MM-DD': [{id,text,checked}] }
+  let vocab = LS.get('planner_vocab', []);            // [{id,word,meaning,count}]
+  let study = LS.get('planner_study', {});            // { subject: { sessions:[{date,seconds}] } }
+  let diary = LS.get('planner_diary', {});            // { 'YYYY-MM-DD': '메모 내용' }
+  let assessments = LS.get('planner_assessments', {}); // { 'YYYY-MM-DD': [{id,time,subject,content}] }
+
+  let calViewDate = new Date();
+  let selectedDate = new Date();
+
+  function saveSchedule(dk){ LS.set('planner_schedule', schedule); if(dk) syncScheduleDoc(dk); }
+  function saveVocab(){ LS.set('planner_vocab', vocab); }
+  function saveStudy(){ LS.set('planner_study', study); }
+  function saveDiary(dk){ LS.set('planner_diary', diary); if(dk) syncDiaryDoc(dk); }
+  function saveAssessments(dk){ LS.set('planner_assessments', assessments); if(dk) syncAssessmentDoc(dk); }
+
+  /* ---------- theme ---------- */
+  function applyTheme(){
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelectorAll('.theme-opt').forEach(el=>{
+      el.classList.toggle('active', el.dataset.theme === theme);
+    });
+  }
+  document.getElementById('theme-row').addEventListener('click', e=>{
+    const opt = e.target.closest('.theme-opt');
+    if(!opt) return;
+    theme = opt.dataset.theme;
+    LS.set('planner_theme', theme);
+    applyTheme();
+  });
+
+  /* ---------- nav ---------- */
+  const pages = ['home','vocab','study','record'];
+  function showPage(name){
+    pages.forEach(p=>{
+      document.getElementById('page-'+p).classList.toggle('hidden', p!==name);
+    });
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      b.classList.toggle('active', b.dataset.page===name);
+    });
+    if(name==='vocab') renderVocab();
+    if(name==='record') renderRecords();
+    if(name==='study' && !timerRunning && typeof renderStudySelect === 'function') renderStudySelect();
+  }
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    b.addEventListener('click', ()=>showPage(b.dataset.page));
+  });
+
+  /* ================= CALENDAR / HOME ================= */
+  const WEEKDAY_FULL = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+
+  function renderHomeLabel(){
+    const d = new Date();
+    document.getElementById('home-date-label').textContent =
+      `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${WEEKDAY_FULL[d.getDay()]}`;
+  }
+
+  function renderCalendar(){
+    const y = calViewDate.getFullYear();
+    const m = calViewDate.getMonth();
+    document.getElementById('cal-month-label').textContent = `${y}년 ${m+1}월`;
+
+    const firstDay = new Date(y, m, 1);
+    const startOffset = firstDay.getDay();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+
+    for(let i=0;i<startOffset;i++){
+      const pad_ = document.createElement('div');
+      pad_.className = 'cal-cell pad';
+      grid.appendChild(pad_);
+    }
+    const todayStr = todayKey();
+    const selStr = dateKey(selectedDate);
+
+    for(let day=1; day<=daysInMonth; day++){
+      const cellDate = new Date(y,m,day);
+      const key = dateKey(cellDate);
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      if(key===todayStr) cell.classList.add('today');
+      if(key===selStr) cell.classList.add('selected');
+
+      const numSpan = document.createElement('span');
+      numSpan.textContent = day;
+      cell.appendChild(numSpan);
+
+      const items = schedule[key];
+      const assessItems = assessments[key];
+      if((items && items.length) || (assessItems && assessItems.length)){
+        const dotRow = document.createElement('span');
+        dotRow.className = 'cal-dot-row';
+        if(items && items.length){
+          const dot = document.createElement('span');
+          dot.className = 'cal-dot';
+          dotRow.appendChild(dot);
+        }
+        if(assessItems && assessItems.length){
+          const dot2 = document.createElement('span');
+          dot2.className = 'cal-dot-assess';
+          dotRow.appendChild(dot2);
+        }
+        cell.appendChild(dotRow);
+      }
+      cell.addEventListener('click', ()=>{
+        if(!confirmLeaveDiary()) return;
+        selectedDate = cellDate;
+        diaryDirty = false;
+        renderCalendar();
+        renderWeekRow();
+        renderDayPanel();
+        renderDiary(true);
+        renderAssessList();
+      });
+      grid.appendChild(cell);
+    }
+  }
+
+  document.getElementById('cal-prev').addEventListener('click', ()=>{
+    calViewDate.setMonth(calViewDate.getMonth()-1);
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', ()=>{
+    calViewDate.setMonth(calViewDate.getMonth()+1);
+    renderCalendar();
+  });
+
+  const WEEKDAY_SHORT = ['일','월','화','수','목','금','토'];
+
+  function renderWeekRow(){
+    const wrap = document.getElementById('week-row');
+    wrap.innerHTML = '';
+
+    const base = new Date(selectedDate);
+    const startOfWeek = new Date(base);
+    startOfWeek.setDate(base.getDate() - base.getDay());
+
+    const todayStr = todayKey();
+    const selStr = dateKey(selectedDate);
+
+    for(let i=0;i<7;i++){
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate()+i);
+      const key = dateKey(d);
+      const items = schedule[key] || [];
+      const doneCount = items.filter(it=>it.checked).length;
+
+      const cell = document.createElement('div');
+      cell.className = 'week-day';
+      if(key===todayStr) cell.classList.add('today');
+      if(key===selStr) cell.classList.add('selected');
+      if(items.length>0) cell.classList.add('has-todo');
+
+      const countLabel = items.length>0 ? (doneCount + '/' + items.length) : '-';
+
+      cell.innerHTML = '<div class="wd-label">' + WEEKDAY_SHORT[d.getDay()] + '</div>' +
+        '<div class="wd-num">' + d.getDate() + '</div>' +
+        '<div class="wd-count">' + countLabel + '</div>';
+      cell.addEventListener('click', ()=>{
+        if(!confirmLeaveDiary()) return;
+        selectedDate = d;
+        diaryDirty = false;
+        if(d.getMonth() !== calViewDate.getMonth() || d.getFullYear() !== calViewDate.getFullYear()){
+          calViewDate = new Date(d);
+        }
+        renderCalendar();
+        renderWeekRow();
+        renderDayPanel();
+        renderDiary(true);
+        renderAssessList();
+      });
+      wrap.appendChild(cell);
+    }
+  }
+
+  function renderDayPanel(){
+    const key = dateKey(selectedDate);
+    const isToday = key === todayKey();
+    document.getElementById('day-panel-title').textContent =
+      `${selectedDate.getMonth()+1}월 ${selectedDate.getDate()}일 일정` + (isToday ? ' (오늘)' : '');
+
+    const list = document.getElementById('todo-list');
+    list.innerHTML = '';
+    const items = schedule[key] || [];
+    if(items.length===0){
+      const empty = document.createElement('div');
+      empty.className = 'empty-note';
+      empty.textContent = '아직 등록된 일정이 없어요. 할 일을 추가해보세요!';
+      list.appendChild(empty);
+      return;
+    }
+    items.forEach(item=>{
+      const li = document.createElement('li');
+      li.className = 'todo-item' + (item.checked ? ' checked' : '');
+      const chk = document.createElement('div');
+      chk.className = 'chk' + (item.checked ? ' on' : '');
+      chk.textContent = item.checked ? '✓' : '';
+      chk.addEventListener('click', ()=>{
+        item.checked = !item.checked;
+        saveSchedule(key);
+        renderDayPanel();
+        renderCalendar();
+        renderWeekRow();
+        if(typeof renderStudySelect === 'function') renderStudySelect();
+      });
+      const span = document.createElement('span');
+      span.textContent = item.text;
+      const del = document.createElement('button');
+      del.className = 'del-btn';
+      del.textContent = '✕';
+      del.addEventListener('click', ()=>{
+        schedule[key] = schedule[key].filter(i=>i.id!==item.id);
+        saveSchedule(key);
+        renderDayPanel();
+        renderCalendar();
+        renderWeekRow();
+        if(typeof renderStudySelect === 'function') renderStudySelect();
+      });
+      li.appendChild(chk);
+      li.appendChild(span);
+      li.appendChild(del);
+      list.appendChild(li);
+    });
+  }
+
+  /* ---------- 학습일기 (저장 버튼으로 저장) ---------- */
+  let diaryDirty = false;
+
+  function setDiaryStatus(msg, dirty){
+    const statusEl = document.getElementById('diary-status');
+    if(!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.classList.toggle('dirty', !!dirty);
+  }
+
+  // force=true: 날짜 이동 등으로 화면을 새로 채울 때 / false: 동기화 등 자동 갱신 (작성 중인 글은 건드리지 않음)
+  function renderDiary(force){
+    const key = dateKey(selectedDate);
+    const isToday = key === todayKey();
+    const titleEl = document.getElementById('diary-panel-title');
+    if(titleEl){
+      titleEl.textContent = `${selectedDate.getMonth()+1}월 ${selectedDate.getDate()}일 학습일기` + (isToday ? ' (오늘)' : '');
+    }
+    if(diaryDirty && !force) return;
+    const textarea = document.getElementById('diary-textarea');
+    if(textarea) textarea.value = diary[key] || '';
+    diaryDirty = false;
+    setDiaryStatus(diary[key] ? '저장된 일기예요. 수정 후 저장을 눌러주세요' : '', false);
+  }
+
+  // 작성 중인 내용이 있으면 날짜 이동 전에 확인
+  function confirmLeaveDiary(){
+    if(!diaryDirty) return true;
+    return confirm('저장하지 않은 학습일기가 있어요. 저장하지 않고 이동할까요?');
+  }
+
+  const diaryTextareaEl = document.getElementById('diary-textarea');
+  if(diaryTextareaEl){
+    diaryTextareaEl.addEventListener('input', ()=>{
+      diaryDirty = true;
+      setDiaryStatus('아직 저장되지 않았어요', true);
+    });
+  }
+  const diarySaveBtn = document.getElementById('diary-save-btn');
+  if(diarySaveBtn){
+    diarySaveBtn.addEventListener('click', ()=>{
+      const key = dateKey(selectedDate);
+      const val = diaryTextareaEl.value;
+      if(val.trim()===''){
+        delete diary[key];
+      } else {
+        diary[key] = val;
+      }
+      saveDiary(key);
+      diaryDirty = false;
+      setDiaryStatus('저장됐어요 · ' + new Date().toLocaleTimeString(), false);
+    });
+  }
+
+  /* ---------- 수행평가 ---------- */
+  function fillPeriodSelect(selectEl){
+    if(!selectEl) return;
+    const prev = selectEl.value;
+    selectEl.innerHTML = '';
+    for(let p=1; p<=7; p++){
+      const o = document.createElement('option');
+      o.value = String(p);
+      o.textContent = p + '교시';
+      selectEl.appendChild(o);
+    }
+    if(prev) selectEl.value = prev;
+  }
+  fillPeriodSelect(document.getElementById('assess-period-select'));
+
+  function formatAssessDate(dk){
+    const parts = dk.split('-');
+    if(parts.length !== 3) return dk;
+    return `${parseInt(parts[1],10)}월 ${parseInt(parts[2],10)}일`;
+  }
+
+  function renderAssessList(){
+    const key = dateKey(selectedDate);
+    const dateInput = document.getElementById('assess-date-input');
+    if(dateInput) dateInput.value = key;
+
+    const list = document.getElementById('assess-list');
+    if(!list) return;
+    list.innerHTML = '';
+    const items = (assessments[key] || []).slice().sort((a,b)=>(parseInt(a.period,10)||0)-(parseInt(b.period,10)||0));
+    items.forEach(item=>{
+      const li = document.createElement('li');
+      li.className = 'assess-item';
+      const periodLabel = item.period ? item.period + '교시' : (item.time || '');
+      li.innerHTML = `
+        <div class="assess-main">
+          <div class="assess-time">${formatAssessDate(key)} · ${periodLabel ? periodLabel + ' · ' : ''}<span class="assess-subject">${escapeHtml(item.subject || '')}</span></div>
+          <div class="assess-content">${escapeHtml(item.content)}</div>
+        </div>
+      `;
+      const del = document.createElement('button');
+      del.className = 'del-btn';
+      del.textContent = '✕';
+      del.addEventListener('click', ()=>{
+        assessments[key] = (assessments[key] || []).filter(i=>i.id !== item.id);
+        saveAssessments(key);
+        renderAssessList();
+        renderCalendar();
+        renderWeekRow();
+      });
+      li.appendChild(del);
+      list.appendChild(li);
+    });
+  }
+
+  const assessAddBtn = document.getElementById('assess-add');
+  if(assessAddBtn){
+    assessAddBtn.addEventListener('click', ()=>{
+      const dateInput = document.getElementById('assess-date-input');
+      const periodSelect = document.getElementById('assess-period-select');
+      const subjectSelect = document.getElementById('assess-subject-select');
+      const contentInput = document.getElementById('assess-content-input');
+
+      const dk = dateInput.value || dateKey(selectedDate);
+      const content = contentInput.value.trim();
+      if(!content){ alert('수행평가 내용을 입력해주세요!'); return; }
+
+      if(!assessments[dk]) assessments[dk] = [];
+      assessments[dk].push({
+        id: 'a'+Date.now()+Math.random().toString(16).slice(2),
+        period: periodSelect.value || '',
+        subject: subjectSelect.value || '',
+        content
+      });
+      saveAssessments(dk);
+      contentInput.value = '';
+
+      if(dk === dateKey(selectedDate)) renderAssessList();
+      renderCalendar();
+      renderWeekRow();
+    });
+  }
+
+  /* ---------- subject / task option lists ---------- */
+  let subjectOptions = LS.get('planner_subjects', ['국어','영어','수학','과학','사회']);
+  let taskOptions = LS.get('planner_tasks', ['교과서 예습','문제집 풀기','오답노트 정리','단어 암기','복습']);
+
+  function saveSubjectOptions(){ LS.set('planner_subjects', subjectOptions); syncDropdowns(); }
+  function saveTaskOptions(){ LS.set('planner_tasks', taskOptions); syncDropdowns(); }
+
+  function fillSelect(selectEl, options){
+    const prevValue = selectEl.value;
+    selectEl.innerHTML = '';
+    options.forEach(opt=>{
+      const o = document.createElement('option');
+      o.value = opt; o.textContent = opt;
+      selectEl.appendChild(o);
+    });
+    if(options.includes(prevValue)) selectEl.value = prevValue;
+  }
+
+  function renderSelects(){
+    fillSelect(document.getElementById('subject-select'), subjectOptions);
+    fillSelect(document.getElementById('task-select'), taskOptions);
+  }
+
+  function renderManageTags(listId, options, removeFn){
+    const wrap = document.getElementById(listId);
+    wrap.innerHTML = '';
+    options.forEach(opt=>{
+      const tag = document.createElement('div');
+      tag.className = 'manage-tag';
+      const span = document.createElement('span');
+      span.textContent = opt;
+      const btn = document.createElement('button');
+      btn.textContent = '✕';
+      btn.addEventListener('click', ()=>removeFn(opt));
+      tag.appendChild(span);
+      tag.appendChild(btn);
+      wrap.appendChild(tag);
+    });
+  }
+
+  function renderSubjectManage(){
+    renderManageTags('subject-tag-list', subjectOptions, (opt)=>{
+      if(subjectOptions.length<=1) return;
+      subjectOptions = subjectOptions.filter(o=>o!==opt);
+      saveSubjectOptions();
+      renderSelects();
+      renderSubjectManage();
+    });
+  }
+  function renderTaskManage(){
+    renderManageTags('task-tag-list', taskOptions, (opt)=>{
+      if(taskOptions.length<=1) return;
+      taskOptions = taskOptions.filter(o=>o!==opt);
+      saveTaskOptions();
+      renderSelects();
+      renderTaskManage();
+    });
+  }
+
+  document.getElementById('manage-subject-btn').addEventListener('click', ()=>{
+    document.getElementById('subject-manage-panel').classList.toggle('hidden');
+    renderSubjectManage();
+  });
+  document.getElementById('manage-task-btn').addEventListener('click', ()=>{
+    document.getElementById('task-manage-panel').classList.toggle('hidden');
+    renderTaskManage();
+  });
+
+  document.getElementById('subject-new-add').addEventListener('click', ()=>{
+    const input = document.getElementById('subject-new-input');
+    const val = input.value.trim();
+    if(!val || subjectOptions.includes(val)) return;
+    subjectOptions.push(val);
+    saveSubjectOptions();
+    input.value = '';
+    renderSelects();
+    renderSubjectManage();
+  });
+  document.getElementById('task-new-add').addEventListener('click', ()=>{
+    const input = document.getElementById('task-new-input');
+    const val = input.value.trim();
+    if(!val || taskOptions.includes(val)) return;
+    taskOptions.push(val);
+    saveTaskOptions();
+    input.value = '';
+    renderSelects();
+    renderTaskManage();
+  });
+
+  renderSelects();
+
+  document.getElementById('todo-add').addEventListener('click', addTodo);
+  function addTodo(){
+    const subject = document.getElementById('subject-select').value;
+    const task = document.getElementById('task-select').value;
+    if(!subject || !task) return;
+    const text = subject + ' · ' + task;
+    const key = dateKey(selectedDate);
+    if(!schedule[key]) schedule[key] = [];
+    schedule[key].push({id:'t'+Date.now()+Math.random().toString(16).slice(2), text, checked:false});
+    saveSchedule(key);
+    renderDayPanel();
+    renderCalendar();
+    renderWeekRow();
+    if(typeof renderStudySelect === 'function') renderStudySelect();
+  }
+
+  // auto-check the exact checklist item the study session was linked to
+  function autoCheckById(dateStr, todoId){
+    const items = schedule[dateStr];
+    if(!items || !todoId) return;
+    const target = items.find(it=>it.id===todoId);
+    if(target && !target.checked){
+      target.checked = true;
+      saveSchedule(dateStr);
+      if(dateKey(selectedDate)===dateStr){ renderDayPanel(); }
+      renderCalendar();
+      renderWeekRow();
+    }
+  }
+
+  /* ================= VOCAB ================= */
+  let vocabEditingId = null;
+
+  function renderVocab(){
+    document.getElementById('vocab-count-label').textContent = `단어 ${vocab.length}개`;
+    const wrap = document.getElementById('vocab-list');
+    wrap.innerHTML = '';
+    if(vocab.length===0){
+      const empty = document.createElement('div');
+      empty.className = 'empty-note';
+      empty.textContent = '단어를 추가하고 차곡차곡 외워봐요!';
+      wrap.appendChild(empty);
+      return;
+    }
+    const sorted = [...vocab].sort((a,b)=>a.count-b.count);
+    sorted.forEach(v=>{
+      const row = document.createElement('div');
+      row.className = 'vocab-item';
+
+      if(vocabEditingId === v.id){
+        const formWrap = document.createElement('div');
+        formWrap.className = 'vocab-edit-form';
+        formWrap.innerHTML = `
+          <input type="text" class="edit-word-input" value="${escapeHtml(v.word)}" placeholder="단어">
+          <input type="text" class="edit-meaning-input" value="${escapeHtml(v.meaning)}" placeholder="뜻">
+          <div class="edit-btn-row">
+            <button class="cancel-btn">취소</button>
+            <button class="save-btn">저장</button>
+          </div>
+        `;
+        row.appendChild(formWrap);
+        wrap.appendChild(row);
+
+        const wordInput = formWrap.querySelector('.edit-word-input');
+        const meaningInput = formWrap.querySelector('.edit-meaning-input');
+        formWrap.querySelector('.cancel-btn').addEventListener('click', ()=>{
+          vocabEditingId = null;
+          renderVocab();
+        });
+        formWrap.querySelector('.save-btn').addEventListener('click', ()=>{
+          const newWord = wordInput.value.trim();
+          const newMeaning = meaningInput.value.trim();
+          if(!newWord || !newMeaning) return;
+          if(isDuplicateWord(newWord, v.id)){
+            const proceed = confirm(`"${newWord}"는 이미 단어장에 있는 단어예요. 그래도 저장하시겠어요?`);
+            if(!proceed) return;
+          }
+          v.word = newWord;
+          v.meaning = newMeaning;
+          saveVocab();
+          syncVocabDoc(v);
+          vocabEditingId = null;
+          renderVocab();
+        });
+        return;
+      }
+
+      row.innerHTML = `
+        <div style="flex:1;">
+          <div class="vocab-word">${escapeHtml(v.word)}</div>
+          <div class="vocab-meaning blurred" data-id="${v.id}">${escapeHtml(v.meaning)}</div>
+          <button class="reveal-btn" data-reveal="${v.id}">뜻 보기</button>
+          <div class="vocab-manage-row">
+            <button class="dict-link" data-dict="${v.id}">🔍 사전</button>
+            <button class="edit-word" data-edit="${v.id}">✎ 수정</button>
+            <button class="del-word" data-del="${v.id}">🗑 삭제</button>
+          </div>
+        </div>
+        <div class="vocab-count">${v.count}회</div>
+      `;
+      const actions = document.createElement('div');
+      actions.className = 'vocab-actions';
+
+      const wrongBtn = document.createElement('button');
+      wrongBtn.className = 'vocab-incorrect';
+      wrongBtn.title = '틀렸어요';
+      wrongBtn.textContent = '✕';
+      wrongBtn.addEventListener('click', ()=>{
+        v.count -= 1;
+        saveVocab();
+        syncVocabDoc(v);
+        renderVocab();
+      });
+
+      const btn = document.createElement('button');
+      btn.className = 'vocab-check';
+      btn.title = '맞았어요';
+      btn.textContent = '✓';
+      btn.addEventListener('click', ()=>{
+        v.count += 1;
+        saveVocab();
+        syncVocabDoc(v);
+        renderVocab();
+      });
+
+      actions.appendChild(wrongBtn);
+      actions.appendChild(btn);
+      row.appendChild(actions);
+      wrap.appendChild(row);
+
+      const revealBtn = row.querySelector(`[data-reveal="${v.id}"]`);
+      const meaningEl = row.querySelector(`.vocab-meaning[data-id="${v.id}"]`);
+      revealBtn.addEventListener('click', ()=>{
+        const isBlurred = meaningEl.classList.toggle('blurred');
+        revealBtn.textContent = isBlurred ? '뜻 보기' : '뜻 가리기';
+      });
+
+      row.querySelector(`[data-dict="${v.id}"]`).addEventListener('click', ()=>{
+        openDictionary(v.word);
+      });
+      row.querySelector(`[data-edit="${v.id}"]`).addEventListener('click', ()=>{
+        vocabEditingId = v.id;
+        renderVocab();
+      });
+      row.querySelector(`[data-del="${v.id}"]`).addEventListener('click', ()=>{
+        if(confirm(`"${v.word}" 단어를 삭제할까요?`)){
+          vocab = vocab.filter(item=>item.id !== v.id);
+          saveVocab();
+          deleteVocabDoc(v.id);
+          renderVocab();
+        }
+      });
+    });
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+
+  // 이미 등록된 단어인지 확인 (excludeId: 수정 중인 단어 자신은 제외)
+  function isDuplicateWord(word, excludeId){
+    const norm = word.trim().toLowerCase();
+    return vocab.some(item => item.id !== excludeId && item.word.trim().toLowerCase() === norm);
+  }
+
+  /* ---------- 영어 단어 자동완성 (스펠링 오타 방지) ---------- */
+  let wordSuggestTimer = null;
+  let wordSuggestAbort = null;
+
+  function hideWordSuggestions(){
+    const box = document.getElementById('word-suggest-list');
+    if(box){ box.classList.add('hidden'); box.innerHTML = ''; }
+  }
+
+  async function fetchWordSuggestions(prefix){
+    if(wordSuggestAbort) wordSuggestAbort.abort();
+    wordSuggestAbort = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    try{
+      const res = await fetch(
+        'https://api.datamuse.com/sug?s=' + encodeURIComponent(prefix) + '&max=6',
+        wordSuggestAbort ? { signal: wordSuggestAbort.signal } : {}
+      );
+      const list = await res.json();
+      renderWordSuggestions(Array.isArray(list) ? list.map(x=>x.word) : []);
+    }catch(e){
+      // 네트워크 문제 등은 조용히 무시 (자동완성 없이도 입력은 계속 가능)
+    }
+  }
+
+  function renderWordSuggestions(words){
+    const box = document.getElementById('word-suggest-list');
+    if(!box) return;
+    if(!words || words.length===0){
+      hideWordSuggestions();
+      return;
+    }
+    box.innerHTML = words.map(w => `<div class="word-suggest-item" data-word="${escapeHtml(w)}">${escapeHtml(w)}</div>`).join('');
+    box.classList.remove('hidden');
+    box.querySelectorAll('.word-suggest-item').forEach(item=>{
+      item.addEventListener('mousedown', (e)=>{
+        e.preventDefault(); // blur보다 먼저 클릭이 처리되도록
+        document.getElementById('word-input').value = item.dataset.word;
+        hideWordSuggestions();
+        document.getElementById('meaning-input').focus();
+      });
+    });
+  }
+
+  const wordInputEl = document.getElementById('word-input');
+  if(wordInputEl){
+    wordInputEl.addEventListener('input', ()=>{
+      const val = wordInputEl.value.trim();
+      if(wordSuggestTimer) clearTimeout(wordSuggestTimer);
+      if(val.length < 2){ hideWordSuggestions(); return; }
+      wordSuggestTimer = setTimeout(()=>fetchWordSuggestions(val), 250);
+    });
+    wordInputEl.addEventListener('blur', ()=>{
+      setTimeout(hideWordSuggestions, 150);
+    });
+  }
+
+  /* ---------- 포털 사전 연동 ---------- */
+  function openDictionary(word){
+    const w = (word || '').trim();
+    if(!w){ alert('사전에서 찾을 단어를 입력해주세요!'); return; }
+    window.open('https://en.dict.naver.com/#/search?query=' + encodeURIComponent(w), '_blank');
+  }
+
+  const dictLookupBtn = document.getElementById('dict-lookup-btn');
+  if(dictLookupBtn){
+    dictLookupBtn.addEventListener('click', ()=>{
+      openDictionary(document.getElementById('word-input').value);
+    });
+  }
+
+  document.getElementById('word-add').addEventListener('click', ()=>{
+    const wIn = document.getElementById('word-input');
+    const mIn = document.getElementById('meaning-input');
+    const word = wIn.value.trim();
+    const meaning = mIn.value.trim();
+    if(!word || !meaning) return;
+    if(isDuplicateWord(word)){
+      const proceed = confirm(`"${word}"는 이미 단어장에 있는 단어예요. 그래도 추가하시겠어요?`);
+      if(!proceed) return;
+    }
+    const newEntry = {id:'v'+Date.now()+Math.random().toString(16).slice(2), word, meaning, count:0};
+    vocab.push(newEntry);
+    saveVocab();
+    syncVocabDoc(newEntry);
+    wIn.value=''; mIn.value='';
+    hideWordSuggestions();
+    renderVocab();
+  });
+
+  /* ---------- test modal ---------- */
+  let quizState = null;
+
+  document.getElementById('open-test').addEventListener('click', openTestModal);
+
+  function openTestModal(){
+    if(vocab.length===0){
+      alert('먼저 단어를 등록해주세요!');
+      return;
+    }
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'test-overlay';
+    const sortedForPick = [...vocab].sort((a,b)=>a.count-b.count);
+    overlay.innerHTML = `
+      <div class="modal-sheet">
+        <button class="close-x" id="test-close">✕</button>
+        <div class="modal-title">테스트 모드 선택</div>
+        <div class="mode-row">
+          <div class="mode-opt active" data-mode="meaning">
+            <div class="m-title">뜻 맞추기</div>
+            <div class="m-sub">단어를 보고 뜻을 입력</div>
+          </div>
+          <div class="mode-opt" data-mode="spelling">
+            <div class="m-title">스펠링 맞추기</div>
+            <div class="m-sub">뜻을 보고 철자를 입력</div>
+          </div>
+        </div>
+        <div class="word-pick-header">
+          <span>테스트할 단어 선택 (${sortedForPick.length}개 중)</span>
+          <div class="word-pick-actions">
+            <button type="button" id="pick-all">전체 선택</button>
+            <button type="button" id="pick-none">전체 해제</button>
+          </div>
+        </div>
+        <div class="word-pick-list">
+          ${sortedForPick.map(v => `
+            <label class="word-pick-row">
+              <input type="checkbox" class="word-pick" data-id="${v.id}" checked>
+              <span class="wp-word">${escapeHtml(v.word)}</span>
+              <span class="wp-meaning">${escapeHtml(v.meaning)}</span>
+              <span class="wp-count">${v.count}회</span>
+            </label>
+          `).join('')}
+        </div>
+        <button class="primary-btn" id="test-start" style="width:100%;">테스트 시작</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    let mode = 'meaning';
+    overlay.querySelectorAll('.mode-opt').forEach(opt=>{
+      opt.addEventListener('click', ()=>{
+        mode = opt.dataset.mode;
+        overlay.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('active', o===opt));
+      });
+    });
+    overlay.querySelector('#pick-all').addEventListener('click', ()=>{
+      overlay.querySelectorAll('.word-pick').forEach(cb=>cb.checked = true);
+    });
+    overlay.querySelector('#pick-none').addEventListener('click', ()=>{
+      overlay.querySelectorAll('.word-pick').forEach(cb=>cb.checked = false);
+    });
+    overlay.querySelector('#test-close').addEventListener('click', ()=>overlay.remove());
+    overlay.querySelector('#test-start').addEventListener('click', ()=>{
+      const checked = overlay.querySelectorAll('.word-pick:checked');
+      const ids = Array.from(checked).map(el=>el.dataset.id);
+      if(ids.length===0){ alert('테스트할 단어를 하나 이상 선택해주세요!'); return; }
+      const selected = vocab.filter(v=>ids.includes(v.id));
+      startQuiz(mode, selected);
+    });
+  }
+
+  function shuffleArray(arr){
+    const a = [...arr];
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function startQuiz(mode, words){
+    const overlay = document.getElementById('test-overlay');
+    if(overlay) overlay.remove();
+    const pool = shuffleArray(words);
+    quizState = { mode, words: pool, idx:0, correct:0 };
+    renderQuiz();
+  }
+
+  function renderQuiz(){
+    let overlay = document.getElementById('test-overlay');
+    if(!overlay){
+      overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.id = 'test-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    if(quizState.idx >= quizState.words.length){
+      overlay.innerHTML = `
+        <div class="modal-sheet">
+          <button class="close-x" id="test-close">✕</button>
+          <div class="modal-title">테스트 완료!</div>
+          <div class="result-final">
+            <span class="big-num">${quizState.correct} / ${quizState.words.length}</span>
+          </div>
+          <div class="empty-note">맞출 때마다 단어의 암기 횟수가 올라가요.</div>
+          <button class="primary-btn" id="test-done" style="width:100%; margin-top:10px;">확인</button>
+        </div>
+      `;
+      overlay.querySelector('#test-close').addEventListener('click', ()=>{ overlay.remove(); renderVocab(); });
+      overlay.querySelector('#test-done').addEventListener('click', ()=>{ overlay.remove(); renderVocab(); });
+      return;
+    }
+
+    const cur = quizState.words[quizState.idx];
+    const isMeaning = quizState.mode === 'meaning';
+    const question = isMeaning ? cur.word : cur.meaning;
+    const placeholder = isMeaning ? '뜻을 입력하세요' : '스펠링을 입력하세요';
+
+    overlay.innerHTML = `
+      <div class="modal-sheet">
+        <button class="close-x" id="test-close">✕</button>
+        <div class="modal-title">${isMeaning ? '뜻 맞추기' : '스펠링 맞추기'}</div>
+        <div class="quiz-progress">${quizState.idx+1} / ${quizState.words.length} · 맞은 개수 ${quizState.correct}</div>
+        <div class="quiz-q">${escapeHtml(question)}</div>
+        <input type="text" class="quiz-input" id="quiz-answer" placeholder="${placeholder}" autocomplete="off">
+        <div class="quiz-feedback" id="quiz-feedback"></div>
+        <button class="primary-btn" id="quiz-submit" style="width:100%;">확인</button>
+      </div>
+    `;
+    const input = overlay.querySelector('#quiz-answer');
+    input.focus();
+    overlay.querySelector('#test-close').addEventListener('click', ()=>{ overlay.remove(); renderVocab(); });
+
+    function submit(){
+      const answer = input.value.trim();
+      if(!answer) return;
+      const target = isMeaning ? cur.meaning : cur.word;
+      const ok = normalize(answer) === normalize(target);
+      const fb = overlay.querySelector('#quiz-feedback');
+      if(ok){
+        cur.count += 1;
+        quizState.correct += 1;
+        fb.textContent = '정답이에요! 🎉';
+        fb.className = 'quiz-feedback ok';
+      }else{
+        cur.count -= 1;
+        fb.textContent = `아쉬워요! 정답: ${target}`;
+        fb.className = 'quiz-feedback no';
+      }
+      saveVocab();
+      syncVocabDoc(cur);
+      overlay.querySelector('#quiz-submit').disabled = true;
+      input.disabled = true;
+      setTimeout(()=>{
+        quizState.idx += 1;
+        renderQuiz();
+      }, 1100);
+    }
+    function normalize(s){ return s.replace(/\s+/g,'').toLowerCase(); }
+
+    overlay.querySelector('#quiz-submit').addEventListener('click', submit);
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+  }
+
+  /* ================= STUDY TIMER ================= */
+  let timerRunning = false;
+  let timerStart = null;
+  let timerInterval = null;
+  let currentSessionDate = null;
+  let currentTodoId = null;
+
+  function fmtHMS(totalSeconds){
+    const h = Math.floor(totalSeconds/3600);
+    const m = Math.floor((totalSeconds%3600)/60);
+    const s = Math.floor(totalSeconds%60);
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+  function fmtMinutes(totalSeconds){
+    const mins = Math.round(totalSeconds/60);
+    if(mins < 60) return `${mins}분`;
+    const h = Math.floor(mins/60), m = mins%60;
+    return m>0 ? `${h}시간 ${m}분` : `${h}시간`;
+  }
+
+  function getTodayTodoList(){
+    const key = todayKey();
+    return schedule[key] || [];
+  }
+
+  function renderStudySelect(){
+    const select = document.getElementById('subject-input');
+    const note = document.getElementById('no-todo-note');
+    const btn = document.getElementById('timer-toggle');
+    const todos = getTodayTodoList();
+    const prevValue = select.value;
+
+    select.innerHTML = '';
+    if(todos.length===0){
+      note.classList.remove('hidden');
+      select.classList.add('hidden');
+      btn.disabled = true;
+      return;
+    }
+    note.classList.add('hidden');
+    select.classList.remove('hidden');
+    btn.disabled = false;
+
+    todos.forEach(item=>{
+      const o = document.createElement('option');
+      o.value = item.id;
+      o.textContent = item.text + (item.checked ? ' (완료)' : '');
+      select.appendChild(o);
+    });
+    const stillExists = todos.some(t=>t.id===prevValue);
+    if(stillExists) select.value = prevValue;
+  }
+  renderStudySelect();
+
+  document.getElementById('timer-toggle').addEventListener('click', ()=>{
+    const subjInput = document.getElementById('subject-input');
+    const btn = document.getElementById('timer-toggle');
+    const display = document.getElementById('timer-display');
+    const resultBox = document.getElementById('result-box');
+
+    if(!timerRunning){
+      const todos = getTodayTodoList();
+      const selectedTodo = todos.find(t=>t.id===subjInput.value);
+      if(!selectedTodo){ alert('오늘 일정에서 공부할 항목을 먼저 선택해주세요!'); return; }
+      timerRunning = true;
+      timerStart = Date.now();
+      currentSessionDate = todayKey();
+      currentTodoId = selectedTodo.id;
+      resultBox.classList.add('hidden');
+      btn.textContent = '공부 끝';
+      btn.classList.remove('start'); btn.classList.add('stop');
+      subjInput.disabled = true;
+      timerInterval = setInterval(()=>{
+        const elapsed = Math.floor((Date.now()-timerStart)/1000);
+        display.textContent = fmtHMS(elapsed);
+      }, 500);
+    } else {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      const elapsedSec = Math.max(1, Math.floor((Date.now()-timerStart)/1000));
+      const todos = getTodayTodoList();
+      const selectedTodo = todos.find(t=>t.id===currentTodoId) || { text: subjInput.value };
+      const name = selectedTodo.text;
+
+      if(!study[name]) study[name] = { sessions: [] };
+      // 같은 항목을 같은 날 여러 번 시작/종료해도 공부 횟수는 하루에 1회로만 집계
+      const existingToday = study[name].sessions.find(s=>s.date===currentSessionDate);
+      if(existingToday){
+        existingToday.seconds += elapsedSec;
+      } else {
+        study[name].sessions.push({ date: currentSessionDate, seconds: elapsedSec });
+      }
+      saveStudy();
+      syncStudyDoc(name);
+
+      const sessions = study[name].sessions;
+      const total = sessions.reduce((a,s)=>a+s.seconds,0);
+      const avg = total / sessions.length;
+
+      resultBox.classList.remove('hidden');
+      resultBox.innerHTML = `
+        <strong>${escapeHtml(name)}</strong> 공부를 마쳤어요!<br>
+        이번 공부 시간: ${fmtMinutes(elapsedSec)}<br>
+        지금까지 총 시간: ${fmtMinutes(total)}<br>
+        평균 공부 시간: ${fmtMinutes(avg)}
+      `;
+
+      btn.textContent = '공부 시작';
+      btn.classList.remove('stop'); btn.classList.add('start');
+      display.textContent = '00:00:00';
+      subjInput.disabled = false;
+
+      autoCheckById(currentSessionDate, currentTodoId);
+      currentTodoId = null;
+      renderStudySelect();
+    }
+  });
+
+  /* ================= RECORDS ================= */
+  function renderRecords(){
+    const names = Object.keys(study);
+    const list = document.getElementById('record-list');
+    const chart = document.getElementById('record-chart');
+
+    if(names.length===0){
+      list.innerHTML = '<div class="empty-note">아직 공부 기록이 없어요. 공부하기에서 타이머를 시작해보세요!</div>';
+      chart.innerHTML = '';
+      document.getElementById('daily-avg').textContent = '0분';
+      document.getElementById('total-days').textContent = '0일';
+      return;
+    }
+
+    list.innerHTML = '';
+    let grandTotal = 0;
+    const allDays = new Set();
+    const counts = [];
+
+    names.forEach(name=>{
+      const sessions = study[name].sessions;
+      const total = sessions.reduce((a,s)=>a+s.seconds,0);
+      const avg = total / sessions.length;
+      grandTotal += total;
+      sessions.forEach(s=>allDays.add(s.date));
+      counts.push({ name, count: sessions.length, total });
+
+      const row = document.createElement('div');
+      row.className = 'record-row';
+      row.innerHTML = `
+        <div>
+          <div class="record-name">${escapeHtml(name)}</div>
+          <div class="record-sub">누적 ${fmtMinutes(total)} · ${sessions.length}회</div>
+        </div>
+        <div class="record-val">평균 ${fmtMinutes(avg)}</div>
+      `;
+      list.appendChild(row);
+    });
+
+    // 공부 횟수 막대그래프 (횟수가 많은 순)
+    counts.sort((a,b)=>b.count-a.count);
+    const maxCount = Math.max(...counts.map(c=>c.count), 1);
+    chart.innerHTML = '<div class="chart-title">공부 횟수</div>' +
+      counts.map(c=>{
+        const pct = Math.round((c.count / maxCount) * 100);
+        return `
+          <div class="bar-row">
+            <div class="bar-labels">
+              <span class="b-name">${escapeHtml(c.name)}</span>
+              <span class="b-count">${c.count}회</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+    const dayCount = allDays.size || 1;
+    document.getElementById('daily-avg').textContent = fmtMinutes(grandTotal/dayCount);
+    document.getElementById('total-days').textContent = `${allDays.size}일`;
+  }
+
+  /* ---------- cloud connect UI wiring ---------- */
+  const cloudUrlInput = document.getElementById('cloud-url-input');
+  if(cloudUrl) cloudUrlInput.value = cloudUrl;
+  document.getElementById('cloud-connect-btn').addEventListener('click', ()=>{
+    const val = cloudUrlInput.value.trim();
+    if(!val) return;
+    cloudUrl = val;
+    LS.set('planner_cloud_url', cloudUrl);
+    startCloudSync();
+  });
+
+  /* ---------- init ---------- */
+  applyTheme();
+  renderHomeLabel();
+  renderCalendar();
+  renderWeekRow();
+  renderDayPanel();
+  renderDiary(true);
+        renderAssessList();
+  renderVocab();
+  if(cloudUrl) startCloudSync();
+})();
+</script>
+</body>
+</html>
